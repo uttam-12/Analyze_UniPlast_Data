@@ -1,0 +1,106 @@
+This repository contains a few tools for converting excel databases into C++ parseable txt. files.
+Their original prupose was to take excel documents containing cosmic ray data taken at Uniplast  and break them down into csv, which could then be turned into
+three-column text files which containg MPV and PR.
+Here is the description of the different macros how they work.
+
+Note: to get the python scripts working you:
+A) Need to have python installed and
+B) need xlrd, which I think you can install just by typing "sudo install python xlrd"
+3) Need to generate different input/ output files: CSV_output.txt, xlsx_input.txt,
+clear the content in these files everytime you creat the file list in these text file,which can be done simply by doing:
+      :>target_name.txt
+      and this will remove everything in test file.
+
+Macro1: xls_to_csv_Uni.py
+
+ This takes in  the list of the tiles being tested in Uniplast per day which contain like, between 3-7 tests usually and convert them into csv file.
+ Steps:
+ 
+ For this you need to generate the file list, called "xlsx_input.txt".You can do this by navigating to the location of the uniplast data
+(in the dropbox it's called "Database" in the dropbox, and type:
+
+find $PWD -type f -name "*clever_asterisk_tag*.xlsx"
+
+And what I mean by clever asterisk tag is that say you want all the uniplast data taken in 2018, the command for that is:
+
+find $PWD -type f -name "*2018*.xlsx"
+
+That means find dosesn't care what's written to the left of 2018, or what's between 2018 and .xlsx. You can then filter this output into the input text file by typing:
+
+find $PWD -type f -name "*2020*.xlsx" > xlsx_input.txt
+This will list all the xlsx files from the database and save into this xlsx_input.txt file.
+
+
+Now you need to create the directory
+
+csv_Uni/
+The csv files will be stored here.
+Now to run the macro, simply do;
+
+ Python xls_to_csv_Uni.py
+
+once this script works it stores all .csv files into the directory csv_Uni.
+
+Now, you creat the txt file of all the csv file created.
+Creat the txt file named csv_Uni.txt and simply do
+
+ls -1 $PWD/csv_Uni/*.csv >csv_Uni.txt
+
+and this will list all the .csv file each with their path and save them in .txt file.
+
+Macro 2: makeTxtFromCSV.C
+
+The macro makeTxtFromCSV.C is meant to take in the .csv file in the txt file and convert  them into simple .txt files that are easy to
+read in and fill histograms with. It also contains a number of dope auxiliary functions which operationis described here;
+
+void makeTxtFromCSV_Uni(char *csvin);
+
+Makes a text file with one column being Tile name and another being MPV from Uniplast data and the third one with PR ectracted through these MPV for each tiles.
+> The csvin is the csv_Uni.txt file created earlier.
+> This function generates output in CSV_output.txt containing the Tile name and MPVsand PRs. Once your output file is created,make different txt file for different tile shap, for eg; B21.txt and so on.
+>Copy all the tiles corresponding and their MPVs and PRs in to the respective .txt file for different tile types.
+>You can do is use grep command.
+        grep "B21" CSV_output.txt >B21.txt and do it for all tiles you have in the CSV_output.txt.
+
+
+     To execute this macro.
+     $ root -l
+     $ .L makeTxtFromCSV_Uni.C
+     $ makeTxtFromCSV_Uni("csv_Uni.txt")
+	
+		 This will give you output in txtfile.
+
+Macro3: extract_unique_Uni.py
+
+ This will extract the unique tiles and its entry from the .txt file for different tile type.
+ I made it such that I can filter out repeated tiles from the text file and only select highest MPV of that repeated tile.
+ The input will be your B21_UNI.txt and the output will look like B21_Unique.txt.
+ Just change the tile type number so you can do same for other tile type.
+
+simply do:
+       Python extract_unique.py
+       the way you execute python script depends on how you install python.In my case Python command works but may not work on your. you may need to use python3 or else.
+ 
+Once you get the unique tiles data. You can simply make histogram for the PR
+
+Macro4 :plotPR.C
+
+This will take in all the PR from the .txt file of particular tile type when you execute the code simply doing this
+    $ root -l
+    $ .L plotPR.C
+    $ plotPR("B22_Unique")
+
+This will generate histogram.
+ Once these steps are followed, and histogram is ready, we can see the tile PR helps one to check any tile shows low PR.
+
+int countLines(char* filelist);
+int countLines(string filelist);
+
+Counts the number of lines in a file, overloaded to take strings and chars
+
+fstream& goToLine(fstream& file, unsigned int num);
+
+Seeks a given line in a file (lines are numbered 0 to n)
+
+
+
